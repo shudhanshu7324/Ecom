@@ -4,16 +4,22 @@ const jwt = require("jsonwebtoken");
 
 const registerUser = async (req, res) => {
   try {
+
     const { name, email, password } = req.body;
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
     const hashedPassword = bcrypt.hashSync(password, 10);
+    let profilePicture = '';
+    if (req.file) {
+      profilePicture = req.file.path; // Save the file path
+    }
     const user = new User({
       name,
       email,
       password: hashedPassword,
+      profilePicture,
     });
     await user.save();
     res.status(201).json({ message: "User registered successfully" });

@@ -119,7 +119,6 @@ const filterProduct = async (req, res) => {
         filter.price.$lte = maxPrice;
       }
     }
-    console.log(filter)
     const products = await Product.find(filter);
     return res.status(200).json({ products });
   } catch (err) {
@@ -130,6 +129,32 @@ const filterProduct = async (req, res) => {
 };
 
 
+const searchProducts = async (req, res) => {
+    try {
+      const { q } = req.query;
+  
+      // Check if query parameter exists
+      if (!q) {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+  
+      // Search by name or description (case-insensitive)
+      const products = await Product.find({
+        $or: [
+          { name: { $regex: q, $options: "i" } }, // Partial match for name
+          { description: { $regex: q, $options: "i" } }, // Partial match for description
+        ],
+      });
+  
+      return res.status(200).json({ products });
+    } catch (err) {
+      return res
+        .status(500)
+        .json({ message: `Error in searching products: ${err.message}` });
+    }
+  };
+
+
 module.exports = {
   createProduct,
   allProduct,
@@ -137,4 +162,5 @@ module.exports = {
   deleteProduct,
   updateProduct,
   filterProduct,
+  searchProducts
 };
