@@ -1,5 +1,5 @@
 const express = require('express');
-const { createProduct,allProduct,userProduct,deleteProduct,updateProduct } = require('../controllers/product.controller');
+const { createProduct,allProduct,userProduct,deleteProduct,updateProduct, filterProduct } = require('../controllers/product.controller');
 const isLoggedin = require('../middlewares/auth.middleware');
 const router = express.Router();
 
@@ -8,6 +8,7 @@ router.get('/allproducts',isLoggedin,allProduct);
 router.get('/userproduct',isLoggedin,userProduct);
 router.delete('/deleteproduct/:id',isLoggedin,deleteProduct);
 router.put('/updateproduct/:id',isLoggedin,updateProduct);
+router.get('/filter',isLoggedin,filterProduct);
 
 
 module.exports = router;

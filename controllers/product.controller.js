@@ -47,56 +47,94 @@ const userProduct = async (req, res) => {
   }
 };
 
-
-const deleteProduct = async (req,res) => {
-    try{
-        const product = await Product.findById(req.params.id);
-        if(!product){
-            return res.status(404).json({message: 'Product not found'});
-        }
-        await Product.findByIdAndDelete(req.params.id);
-        return res.status(200).json({message: 'Product deleted successfully'});
-    }catch(err){
-        return res.status(500).json({message: `Error in deleting product: ${err.message}`});
+const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
-}
+    await Product.findByIdAndDelete(req.params.id);
+    return res.status(200).json({ message: "Product deleted successfully" });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: `Error in deleting product: ${err.message}` });
+  }
+};
 
 const updateProduct = async (req, res) => {
-    try {
-        // Find the product by ID
-        const product = await Product.findById(req.params.id);
+  try {
+    // Find the product by ID
+    const product = await Product.findById(req.params.id);
 
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        // Destructure and fallback to existing values if not provided
-        const {
-            name = product.name,
-            price = product.price,
-            description = product.description,
-            category = product.category,
-        } = req.body;
-
-        // Validate required fields
-        if (!name || !price || !description || !category) {
-            return res.status(400).json({ message: 'Please fill in all fields' });
-        }
-
-        // Update the product
-        product.name = name;
-        product.price = price;
-        product.description = description;
-        product.category = category;
-
-        // Save the updated product
-        await product.save();
-
-        return res.status(200).json({ message: 'Product updated successfully', product });
-    } catch (err) {
-        return res.status(500).json({ message: `Error in updating product: ${err.message}` });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
+
+    // Destructure and fallback to existing values if not provided
+    const {
+      name = product.name,
+      price = product.price,
+      description = product.description,
+      category = product.category,
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !price || !description || !category) {
+      return res.status(400).json({ message: "Please fill in all fields" });
+    }
+
+    // Update the product
+    product.name = name;
+    product.price = price;
+    product.description = description;
+    product.category = category;
+
+    // Save the updated product
+    await product.save();
+
+    return res
+      .status(200)
+      .json({ message: "Product updated successfully", product });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: `Error in updating product: ${err.message}` });
+  }
+};
+
+const filterProduct = async (req, res) => {
+  try {
+    const { category, minPrice, maxPrice } = req.query;
+    const filter = {};
+    if (category) {
+      filter.category = category;
+    }
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) {
+        filter.price.$gte = minPrice;
+      }
+      if (maxPrice) {
+        filter.price.$lte = maxPrice;
+      }
+    }
+    console.log(filter)
+    const products = await Product.find(filter);
+    return res.status(200).json({ products });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: `Error in filtering products: ${err.message}` });
+  }
 };
 
 
-module.exports = { createProduct, allProduct, userProduct,deleteProduct,updateProduct };
+module.exports = {
+  createProduct,
+  allProduct,
+  userProduct,
+  deleteProduct,
+  updateProduct,
+  filterProduct,
+};
