@@ -1,19 +1,28 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { uploadImage } = require("../utils/cloudinary");
+const fs = require("fs");
 
 const registerUser = async (req, res) => {
   try {
-
     const { name, email, password } = req.body;
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
     const hashedPassword = bcrypt.hashSync(password, 10);
-    let profilePicture = '';
+    let profilePicture = "";
     if (req.file) {
-      profilePicture = req.file.path; // Save the file path
+      try {
+        const filePath = req.file.path;
+        const result = await uploadImage(filePath, { folder: "ecom" });
+        profilePicture = result.secure_url;
+        fs.unlinkSync(req.file.path);
+      } catch (error) {
+        fs.unlinkSync(req.file.path);
+        throw new Error("Failed to upload profile picture");
+      }
     }
     const user = new User({
       name,
@@ -22,6 +31,7 @@ const registerUser = async (req, res) => {
       profilePicture,
     });
     await user.save();
+
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -42,11 +52,13 @@ const loginUser = async (req, res) => {
 
     //payload
     const payload = {
-        id:user._id,
-        email:user.email
-    }
+      id: user._id,
+      email: user.email,
+    };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
     res.status(200).json({ message: "User loggedin successfully! ", token });
   } catch (error) {
     res.status(500).json({ message: error.message });
