@@ -32,7 +32,7 @@ const registerUser = async (req, res) => {
     });
     await user.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json({ message: "User registered successfully", success: true });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -59,7 +59,7 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    res.status(200).json({ message: "User loggedin successfully! ", token });
+    res.status(200).json({ message: "User loggedin successfully! ", token , success: true});
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
